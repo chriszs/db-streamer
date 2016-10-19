@@ -1,5 +1,5 @@
 var fs = require('fs');
 
-var dialect = process.env.DIALECT
+var dialect = process.env.DIALECT;
 
-fs.rename('coverage', 'coverage-' + dialect, function(){});
+fs.rename('coverage', 'coverage-' + dialect, function() {});
