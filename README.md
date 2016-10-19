@@ -9,61 +9,61 @@ In order to use this library, you must also install the additional libraries in 
 ### PostgreSQL
 
 ```sh
-    npm install pg --save
-    npm install pg-copy-streams --save
+npm install pg --save
+npm install pg-copy-streams --save
 ```
 
 ### MySQL
 
 ```sh
-    npm install mysql --save
-    npm install streamsql --save
+npm install mysql --save
+npm install streamsql --save
 ```
 
 ## Usage
 
 ```javascript
-    var dbStreamer = require('db-streamer'),
-      connString = 'postgres://streamer:streamer@localhost:5432/streamer-test';
-    
-    // create inserter
-    var inserter = dbStreamer.getInserter({
-      dbConnString: connString,
-      tableName: 'test_table',
-      columns: ['a', 'b', 'c']
-    });
+var dbStreamer = require('db-streamer'),
+  connString = 'postgres://streamer:streamer@localhost:5432/streamer-test';
 
-    // establish connection
-    inserter.connect(function(err, client) {
+// create inserter
+var inserter = dbStreamer.getInserter({
+  dbConnString: connString,
+  tableName: 'test_table',
+  columns: ['a', 'b', 'c']
+});
 
-      // push some rows
-      inserter.push({a: 1, b: 'one', c: new Date() });
-      inserter.push({a: 2, b: 'two', c: new Date() });
-      inserter.push({a: 3, b: 'three', c: new Date() });
+// establish connection
+inserter.connect(function(err, client) {
 
-      // create child table inserter using deferring strategy
-      // this is useful to avoid missing foreign key conflicts as a result of race conditions
-      var childInserter = dbStreamer.getInserter({
-        dbConnString: connString,
-        tableName: 'child_table',
-        columns: ['a', 'd', 'e'],
-        deferUntilEnd: true
-      });
+  // push some rows
+  inserter.push({a: 1, b: 'one', c: new Date() });
+  inserter.push({a: 2, b: 'two', c: new Date() });
+  inserter.push({a: 3, b: 'three', c: new Date() });
 
-      childInserter.push({a: 2, d: 'asdf', e: new Date() });
-      childInserter.push({a: 3, d: 'ghjk', e: new Date() });
+  // create child table inserter using deferring strategy
+  // this is useful to avoid missing foreign key conflicts as a result of race conditions
+  var childInserter = dbStreamer.getInserter({
+    dbConnString: connString,
+    tableName: 'child_table',
+    columns: ['a', 'd', 'e'],
+    deferUntilEnd: true
+  });
 
-      childInserter.setEndHandler(callback);
+  childInserter.push({a: 2, d: 'asdf', e: new Date() });
+  childInserter.push({a: 3, d: 'ghjk', e: new Date() });
 
-      // set end callback
-      inserter.setEndHandler(function() {
-        childInserter.end();
-      });
+  childInserter.setEndHandler(callback);
 
-      // announce end
-      inserter.end();
+  // set end callback
+  inserter.setEndHandler(function() {
+    childInserter.end();
+  });
 
-    });
+  // announce end
+  inserter.end();
+
+});
 ```
     
 ### Inserter Config
