@@ -24,44 +24,25 @@ npm install streamsql --save
 
 ```javascript
 var dbStreamer = require('db-streamer'),
-  connString = 'postgres://streamer:streamer@localhost:5432/streamer-test';
+    connString = 'postgres://streamer:streamer@localhost:5432/streamer-test';
 
 // create inserter
 var inserter = dbStreamer.getInserter({
-  dbConnString: connString,
-  tableName: 'test_table',
-  columns: ['a', 'b', 'c']
+    dbConnString: connString,
+    tableName: 'test_table',
+    columns: ['a', 'b', 'c']
 });
 
 // establish connection
 inserter.connect(function(err, client) {
 
-  // push some rows
-  inserter.push({a: 1, b: 'one', c: new Date() });
-  inserter.push({a: 2, b: 'two', c: new Date() });
-  inserter.push({a: 3, b: 'three', c: new Date() });
+    // push some rows
+    inserter.push({ a: 1, b: 'one', c: new Date() });
+    inserter.push({ a: 2, b: 'two', c: new Date() });
+    inserter.push({ a: 3, b: 'three', c: new Date() });
 
-  // create child table inserter using deferring strategy
-  // this is useful to avoid missing foreign key conflicts as a result of race conditions
-  var childInserter = dbStreamer.getInserter({
-    dbConnString: connString,
-    tableName: 'child_table',
-    columns: ['a', 'd', 'e'],
-    deferUntilEnd: true
-  });
-
-  childInserter.push({a: 2, d: 'asdf', e: new Date() });
-  childInserter.push({a: 3, d: 'ghjk', e: new Date() });
-
-  childInserter.setEndHandler(callback);
-
-  // set end callback
-  inserter.setEndHandler(function() {
-    childInserter.end();
-  });
-
-  // announce end
-  inserter.end();
+    // announce end
+    inserter.end();
 
 });
 ```
