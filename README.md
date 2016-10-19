@@ -8,16 +8,21 @@ In order to use this library, you must also install the additional libraries in 
 
 ### PostgreSQL
 
+```sh
     npm install pg --save
     npm install pg-copy-streams --save
+```
 
 ### MySQL
 
+```sh
     npm install mysql --save
     npm install streamsql --save
+```
 
 ## Usage
 
+```javascript
     var dbStreamer = require('db-streamer'),
       connString = 'postgres://streamer:streamer@localhost:5432/streamer-test';
     
@@ -59,6 +64,7 @@ In order to use this library, you must also install the additional libraries in 
       inserter.end();
 
     });
+```
     
 ### Inserter Config
 
