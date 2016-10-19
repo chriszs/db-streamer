@@ -1,8 +1,6 @@
 # db-streamer
 
-[![npm version](https://badge.fury.io/js/db-streamer.svg)](http://badge.fury.io/js/db-streamer) [![Build Status](https://travis-ci.org/evansiroky/db-streamer.svg?branch=master)](https://travis-ci.org/evansiroky/db-streamer) [![Dependency Status](https://david-dm.org/evansiroky/db-streamer.svg)](https://david-dm.org/evansiroky/db-streamer) [![Test Coverage](https://codeclimate.com/github/evansiroky/db-streamer/badges/coverage.svg)](https://codeclimate.com/github/evansiroky/db-streamer/coverage)
-
-A library to stream data into a SQL database.  Currently supports streaming data into PostgreSQL or MySQL tables.
+A library to stream data into a SQL database, forked from [evansiroky/db-streamer](https://github.com/evansiroky/db-streamer).  Currently supports streaming data into PostgreSQL or MySQL tables.
 
 ## Additional Dependencies
 
@@ -12,11 +10,6 @@ In order to use this library, you must also install the additional libraries in 
 
     npm install pg --save
     npm install pg-copy-streams --save
-    npm install pg-hstore --save
-
-#### With pg and node v0.10.x
-
-You must also install the package `promise-polyfill` and write additional code.  See [here](https://github.com/brianc/node-postgres/issues/1057) for more details.
 
 ### MySQL
 
