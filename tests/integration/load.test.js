@@ -11,13 +11,13 @@ if (typeof Promise == 'undefined') {
 var sequelizeConfig,
     streamerConfig = {
         tableName: 'test_table',
-        columns: ['a', 'b', 'c', 'createdAt', 'updatedAt'],
+        columns: ['a', 'b', 'c', 'created_date', 'updated_date'],
         primaryKey: 'a'
     };
 
 switch (process.env.DIALECT) {
     case 'mysql':
-        sequelizeConfig = 'mysql://streamer:streamer1234@localhost:3306/streamer_test';
+        sequelizeConfig = 'mysql://streamer:streamer@localhost:3306/streamer_test';
         break;
     case 'postgres':
         sequelizeConfig = 'postgres://streamer:streamer@localhost:5432/streamer_test';
@@ -37,6 +37,9 @@ var sequelize = new Sequelize(sequelizeConfig, { logging: false }),
         b: Sequelize.STRING,
         c: Sequelize.DATE
     }, {
+        createdAt: 'created_date',
+        updatedAt: 'updated_date',
+        underscored: true,
         freezeTableName: true
     });
 
@@ -73,28 +76,31 @@ describe('data loading', function() {
     });
 
     var tests = [
-        { method: 'dialect', config: streamerConfig },
         { method: 'sequelize bulk', config: { useSequelizeBulkInsert: true, sequelizeModel: testModel } }
     ];
+
+    if (process.env.DIALECT == 'postgres') {
+        tests.push({ method: 'dialect', config: streamerConfig });
+    }
 
     tests.forEach(function(test) {
         it('data should load using ' + test.method + ' inserter', function(done) {
             this.timeout(15000);
 
             // create inserter
-            var inserter = dbStreamer.getInserter(test.config);
+            var stream = dbStreamer(test.config);
 
             // establish connection
-            inserter.connect(function(err) {
+            stream.connect(function(err) {
 
                 // push some rows
                 var firstRow = { a: 1, b: 'one', c: new Date(12345) };
-                inserter.push(firstRow);
-                inserter.push({ a: 2, b: 'two', c: new Date() });
-                inserter.push({ a: 3, b: 'three', c: new Date() });
+                stream.push(firstRow);
+                stream.push({ a: 2, b: 'two', c: new Date() });
+                stream.push({ a: 3, b: 'three', c: new Date() });
 
                 // set end callback
-                inserter.setEndHandler(function(err) {
+                stream.on('end',function(err) {
                     if (err) {
                         done(err);
                     } else {
@@ -108,7 +114,7 @@ describe('data loading', function() {
                 });
 
                 // announce end
-                inserter.end();
+                stream.end();
 
             });
         });

@@ -1,24 +1,6 @@
 # db-streamer
 
-A library to stream data into a SQL database, forked from [evansiroky/db-streamer](https://github.com/evansiroky/db-streamer).  Currently supports streaming data into PostgreSQL or MySQL tables.
-
-## Additional Dependencies
-
-In order to use this library, you must also install the additional libraries in your project depending on the database that you use.
-
-### PostgreSQL
-
-```sh
-npm install pg --save
-npm install pg-copy-streams --save
-```
-
-### MySQL
-
-```sh
-npm install mysql --save
-npm install streamsql --save
-```
+A library to stream data into a SQL database, forked from [evansiroky/db-streamer](https://github.com/evansiroky/db-streamer).  Currently supports streaming data into PostgreSQL or using a [Sequelize](http://sequelizejs.com/) model to load data into any database supported by Sequelize.
 
 ## Usage
 
@@ -27,22 +9,22 @@ var dbStreamer = require('db-streamer'),
     connString = 'postgres://streamer:streamer@localhost:5432/streamer-test';
 
 // create inserter
-var inserter = dbStreamer.getInserter({
+var stream = dbStreamer({
     dbConnString: connString,
     tableName: 'test_table',
     columns: ['a', 'b', 'c']
 });
 
 // establish connection
-inserter.connect(function(err, client) {
+stream.connect(function(err, client) {
 
     // push some rows
-    inserter.push({ a: 1, b: 'one', c: new Date() });
-    inserter.push({ a: 2, b: 'two', c: new Date() });
-    inserter.push({ a: 3, b: 'three', c: new Date() });
+    stream.push({ a: 1, b: 'one', c: new Date() });
+    stream.push({ a: 2, b: 'two', c: new Date() });
+    stream.push({ a: 3, b: 'three', c: new Date() });
 
     // announce end
-    inserter.end();
+    stream.end();
 
 });
 ```
@@ -54,8 +36,6 @@ inserter.connect(function(err, client) {
 | dbConnString | A database connection string. |
 | tableName | The tablename to insert into. |
 | columns | Array of column names. |
-| primaryKey | Required if using MySQL.  String of the primary key (defaults to `id` if omitted). |
-| deferUntilEnd | Boolean (default=false).  Stream output to temporary file which is then streamed in all at once into table upon calling `end`. |
 
 ### Inserter Config (Sequelize Bulk Insert alternative)
 
@@ -63,4 +43,3 @@ inserter.connect(function(err, client) {
 | --- | --- |
 | useSequelizeBulkInsert | Boolean.  Perform the insert using a combination of [async.cargo](https://github.com/caolan/async#cargo) and [sequelize bulkInsert](http://docs.sequelizejs.com/en/latest/api/model/#bulkcreaterecords-options-promisearrayinstance).  Must provide `sequelizeModel` parameter too. |
 | sequelizeModel | The sequelize model to perform a bulk insert with. |
-| deferUntilEnd | Boolean (default=false).  Pause all cargo iterations until calling `end`. |
