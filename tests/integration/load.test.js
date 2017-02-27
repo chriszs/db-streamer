@@ -1,19 +1,22 @@
-var assert = require('chai').assert,
+// jshint esnext:true
+
+const assert = require('chai').assert,
     moment = require('moment'),
     Sequelize = require('sequelize');
 
-var dbStreamer = require('../../index.js');
+const dbStreamer = require('../../index.js');
 
 if (typeof Promise == 'undefined') {
     global.Promise = require('promise-polyfill');
 }
 
-var sequelizeConfig,
-    streamerConfig = {
-        tableName: 'test_table',
-        columns: ['a', 'b', 'c', 'created_date', 'updated_date'],
-        primaryKey: 'a'
-    };
+let sequelizeConfig;
+
+const streamerConfig = {
+    tableName: 'test_table',
+    columns: ['a', 'b', 'c', 'created_date', 'updated_date'],
+    primaryKey: 'a'
+};
 
 switch (process.env.DIALECT) {
     case 'mysql':
@@ -28,30 +31,31 @@ switch (process.env.DIALECT) {
 
 streamerConfig.dbConnString = sequelizeConfig;
 
-var sequelize = new Sequelize(sequelizeConfig, { logging: false }),
-    testModel = sequelize.define('test_table', {
-        a: {
-            type: Sequelize.INTEGER,
-            primaryKey: true
-        },
-        b: Sequelize.STRING,
-        c: Sequelize.DATE
-    }, {
-        createdAt: 'created_date',
-        updatedAt: 'updated_date',
-        underscored: true,
-        freezeTableName: true
-    });
+const sequelize = new Sequelize(sequelizeConfig, { logging: false });
 
-var assertDataExists = function(expectedObj, usedSequelizeInserter, callback) {
-    setTimeout(function() {
+const testModel = sequelize.define('test_table', {
+    a: {
+        type: Sequelize.INTEGER,
+        primaryKey: true
+    },
+    b: Sequelize.STRING,
+    c: Sequelize.DATE
+}, {
+    createdAt: 'created_date',
+    updatedAt: 'updated_date',
+    underscored: true,
+    freezeTableName: true
+});
+
+const assertDataExists = (expectedObj, usedSequelizeInserter, callback) => {
+    setTimeout(() => {
         testModel
             .findOne({ where: { a: expectedObj.a } })
-            .then(function(result) {
+            .then(result => {
                 assert.isNotNull(result);
-                for (var k in expectedObj) {
+                for (let k in expectedObj) {
                     if (k === 'c') {
-                        var expectedUnix = Math.floor((new Date(expectedObj.c)).getTime() / 1000);
+                        let expectedUnix = Math.floor((new Date(expectedObj.c)).getTime() / 1000);
                         if (!usedSequelizeInserter && process.env.DIALECT == 'mysql') {
                             expectedUnix -= (new Date(expectedObj.c)).getTimezoneOffset() * 60;
                         }
@@ -66,7 +70,7 @@ var assertDataExists = function(expectedObj, usedSequelizeInserter, callback) {
     }, 500);
 };
 
-describe('data loading', function() {
+describe('data loading', () => {
 
     beforeEach(function() {
         // (re)create table
@@ -75,7 +79,7 @@ describe('data loading', function() {
         return testModel.sync({ force: true });
     });
 
-    var tests = [
+    const tests = [
         { method: 'sequelize bulk', config: { useSequelizeBulkInsert: true, sequelizeModel: testModel } }
     ];
 
@@ -83,28 +87,28 @@ describe('data loading', function() {
         tests.push({ method: 'dialect', config: streamerConfig });
     }
 
-    tests.forEach(function(test) {
-        it('data should load using ' + test.method + ' inserter', function(done) {
+    tests.forEach(test => {
+        it(`data should load using ${test.method} inserter`, function(done) {
             this.timeout(15000);
 
             // create inserter
-            var stream = dbStreamer(test.config);
+            const stream = dbStreamer(test.config);
 
             // establish connection
-            stream.connect(function(err) {
+            stream.connect(err => {
 
                 // push some rows
-                var firstRow = { a: 1, b: 'one', c: new Date(12345) };
+                const firstRow = { a: 1, b: 'one', c: new Date(12345) };
                 stream.push(firstRow);
                 stream.push({ a: 2, b: 'two', c: new Date() });
                 stream.push({ a: 3, b: 'three', c: new Date() });
 
                 // set end callback
-                stream.on('end',function(err) {
+                stream.on('end',err => {
                     if (err) {
                         done(err);
                     } else {
-                        assertDataExists(firstRow, test.config.useSequelizeBulkInsert, function(err) {
+                        assertDataExists(firstRow, test.config.useSequelizeBulkInsert, err => {
                             if (err) {
                                 done(err);
                             }
